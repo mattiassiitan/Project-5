@@ -5,7 +5,6 @@ const edit_estimate = '20'
 const time_spent = '2'
 const time_remaining = '5'
 
-
 describe('Issue time tracking', () => {
     beforeEach(() => {
         cy.visit('/');
@@ -14,17 +13,18 @@ describe('Issue time tracking', () => {
         });
     });
 
-
     it('Should create issue and add/edit/remove time estimation', () => {
 
         //Create issue
         cy.get('[data-testid="modal:issue-create"]').within(() => {
             cy.get('.ql-editor').type('Test time tracking 10 hours')
             cy.get('input[name="title"]').type(testname)
-            cy.get('button[type="submit"]').click()
+            cy.get('button[type="submit"]').debounced('click');
         });
         cy.get('[data-testid="modal:issue-create"]').should('not.exist');
         cy.contains('Issue has been successfully created.').should('be.visible');
+        cy.reload();
+        cy.contains('Issue has been successfully created.').should('not.exist');
         cy.contains(testname).debounced('click');
 
         //Check that time estiomation is 0 and change it to 10h, assert
@@ -67,24 +67,25 @@ describe('Issue time tracking', () => {
         cy.get('[data-testid="modal:issue-create"]').within(() => {
             cy.get('.ql-editor').type('Test time logging')
             cy.get('input[name="title"]').type(testname)
-            cy.get('button[type="submit"]').click()
+            cy.get('button[type="submit"]').debounced('click');
         });
         cy.get('[data-testid="modal:issue-create"]').should('not.exist');
         cy.contains('Issue has been successfully created.').should('be.visible');
+        cy.reload();
+        cy.contains('Issue has been successfully created.').should('not.exist');
         cy.contains(testname).debounced('click');
 
-        
         //Check that logged time is 0 and change it, assert
         cy.contains('No time logged').should('be.visible')
         cy.get('[data-testid="icon:stopwatch"]').click()
-            cy.get('[data-testid="modal:tracking"]').should('be.visible').within(() => {
-                cy.get('input[placeholder="Number"]').first().click()
-                cy.get('input[placeholder="Number"]').first().type(time_spent)
-                cy.get('input[placeholder="Number"]').last().click()
-                cy.get('input[placeholder="Number"]').last().type(time_remaining)
-                cy.contains('Done').debounced('click')
-            });
-
+        cy.get('[data-testid="modal:tracking"]').should('be.visible').within(() => {
+            cy.get('input[placeholder="Number"]').first().click()
+            cy.get('input[placeholder="Number"]').first().type(time_spent)
+            cy.get('input[placeholder="Number"]').last().click()
+            cy.get('input[placeholder="Number"]').last().type(time_remaining)
+            cy.contains('Done').debounced('click')
+        });
+        //assert
         cy.contains('No time logged').should('not.exist')
         cy.contains(`${time_spent}h logged`).should('be.visible')
         cy.contains(`${time_remaining}h remaining`).should('be.visible')
@@ -98,25 +99,23 @@ describe('Issue time tracking', () => {
         //Remove logged time, assert
         cy.contains(`${time_spent}h logged`).should('be.visible')
         cy.get('[data-testid="icon:stopwatch"]').click()
-            cy.get('[data-testid="modal:tracking"]').within(() => {
-                cy.get('input[placeholder="Number"]').first().click()
-                cy.get('input[placeholder="Number"]').first().clear()
-                cy.get('input[placeholder="Number"]').last().click()
-                cy.get('input[placeholder="Number"]').last().clear()
-                cy.contains('Done').debounced('click')
-            });
+        cy.get('[data-testid="modal:tracking"]').within(() => {
+            cy.get('input[placeholder="Number"]').first().click()
+            cy.get('input[placeholder="Number"]').first().clear()
+            cy.get('input[placeholder="Number"]').last().click()
+            cy.get('input[placeholder="Number"]').last().clear()
+            cy.contains('Done').debounced('click')
+        });
         cy.contains('No time logged').should('be.visible')
         cy.contains(`${time_spent}h logged`).should('not.exist')
         cy.contains(`${time_remaining}h remaining`).should('not.exist')
         cy.get('[data-testid="icon:close"]').click()
-
+        //assert
         cy.contains(testname).click();
         cy.contains('No time logged').should('be.visible')
         cy.contains(`${time_spent}h logged`).should('not.exist')
         cy.contains(`${time_remaining}h remaining`).should('not.exist')
 
     });
-
-    const getTimeTrackingModal = () => cy.get('[data-testid="modal:tracking"]');
 
 });
