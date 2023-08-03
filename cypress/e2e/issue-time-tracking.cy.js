@@ -30,7 +30,7 @@ describe('Issue time tracking', () => {
         //Check that time estiomation is 0 and change it to 10h, assert
         cy.get('input[placeholder="Number"]').should('be.visible').should('be.empty').should('have.value', '');
         cy.contains('No time logged').should('be.visible')
-        cy.get('input[placeholder="Number"]').click()
+        cy.get('input[placeholder="Number"]')
         cy.get('input[placeholder="Number"]').debounced('type', first_estimate);
         cy.contains(`${first_estimate}h estimated`).should('be.visible')
         cy.get('[data-testid="icon:close"]').click()
@@ -79,9 +79,7 @@ describe('Issue time tracking', () => {
         cy.contains('No time logged').should('be.visible')
         cy.get('[data-testid="icon:stopwatch"]').click()
         cy.get('[data-testid="modal:tracking"]').should('be.visible').within(() => {
-            cy.get('input[placeholder="Number"]').first().click()
             cy.get('input[placeholder="Number"]').first().type(time_spent)
-            cy.get('input[placeholder="Number"]').last().click()
             cy.get('input[placeholder="Number"]').last().type(time_remaining)
             cy.contains('Done').debounced('click')
         });
@@ -100,9 +98,7 @@ describe('Issue time tracking', () => {
         cy.contains(`${time_spent}h logged`).should('be.visible')
         cy.get('[data-testid="icon:stopwatch"]').click()
         cy.get('[data-testid="modal:tracking"]').within(() => {
-            cy.get('input[placeholder="Number"]').first().click()
             cy.get('input[placeholder="Number"]').first().clear()
-            cy.get('input[placeholder="Number"]').last().click()
             cy.get('input[placeholder="Number"]').last().clear()
             cy.contains('Done').debounced('click')
         });
