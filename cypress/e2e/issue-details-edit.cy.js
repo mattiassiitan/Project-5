@@ -7,12 +7,15 @@ describe('Issue details editing', () => {
     });
   });
 
+  const getIssueDetailsModal = () => cy.get('[data-testid="modal:issue-details"]');
+
+
   it('Should update type, status, assignees, reporter, priority successfully', () => {
     getIssueDetailsModal().within(() => {
       cy.get('[data-testid="select:type"]').click('bottomRight');
       cy.get('[data-testid="select-option:Story"]')
-          .trigger('mouseover')
-          .trigger('click');
+        .trigger('mouseover')
+        .trigger('click');
       cy.get('[data-testid="select:type"]').should('contain', 'Story');
 
       cy.get('[data-testid="select:status"]').click('bottomRight');
@@ -61,5 +64,65 @@ describe('Issue details editing', () => {
     });
   });
 
-  const getIssueDetailsModal = () => cy.get('[data-testid="modal:issue-details"]');
+  it("should check the priority dropdown options", () => {
+
+    const getPriorityMenu = () => cy.get('[placeholder="Search"]').next();
+    const expectedLength = 5;
+    let priorityOptions = [];
+
+    cy.get('[data-testid="select:priority"]').then((dropdown) => {
+      const initialSelectedPriority = dropdown.text();
+      priorityOptions.push(initialSelectedPriority);
+      cy.log('Initial value:', initialSelectedPriority);
+
+      cy.get('[data-testid="select:priority"]').click();
+
+      getPriorityMenu().find('[data-select-option-value]').each((option) => {
+
+        cy.wrap(option).invoke('text').then((optionText) => {
+
+          priorityOptions.push(optionText);
+          cy.log(`Added value: ${optionText}, Array length: ${priorityOptions.length}`);
+        });
+
+      }).then(() => {
+        // Assert that the created array has the same length as the predefined number (expectedLength)
+        cy.log('Final Array:', priorityOptions);
+        expect(priorityOptions.length).to.equal(expectedLength);
+      });
+    });
+  });
+
+  it("should validate reporter name using regex", () => {
+
+    const regexPattern = /^[A-Za-z\s]*$/;
+
+    cy.get('[data-testid="select:reporter"]').invoke('text').then((reporterName) => {
+
+      // Assert that the reporter name matches the regex pattern
+      cy.wrap(reporterName).should('match', regexPattern);
+      cy.log(`Reporter name "${reporterName}" contains only characters.`);
+    });
+  });
+
+  it.only("should validate issue title on the board without leading and trailing spaces", () => {
+    // Define the issue title with multiple spaces between words
+    const title = '  This   is     a    test    for obsene     amount       of         spaces     ';
+    const trimmedTitle = title.trim();
+
+    cy.get('[data-testid="icon:close"]').first().click()
+    cy.get('[data-testid="icon:plus"]').click()
+    cy.get('input[name="title"]').type(title);
+    cy.get('button[type="submit"]').click();
+    cy.get('[data-testid="modal:issue-create"]').should('not.exist');
+    cy.contains('Issue has been successfully created.').should('be.visible');
+    cy.reload()
+    cy.get('[data-testid="board-list:backlog"] [data-testid="list-issue"]').first().then((issueTitle) => {
+      const issuetext = issueTitle.text().trim();
+      // Assert that the issue title on the board matches the trimmed title
+      cy.wrap(issuetext).should('eq', trimmedTitle);
+    });
+  });
 });
+
+
