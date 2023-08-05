@@ -105,7 +105,7 @@ describe('Issue details editing', () => {
     });
   });
 
-  it.only("should validate issue title on the board without leading and trailing spaces", () => {
+  it("should validate issue title on the board without leading and trailing spaces", () => {
     // Define the issue title with multiple spaces between words
     const title = '  This   is     a    test    for obsene     amount       of         spaces     ';
     const trimmedTitle = title.trim();
